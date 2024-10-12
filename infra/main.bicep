@@ -14,7 +14,6 @@ param environmentName string
   }
 })
 param location string
-param skipVnet bool = false
 param apiServiceName string = ''
 param apiUserAssignedIdentityName string = ''
 param applicationInsightsName string = ''
@@ -22,8 +21,20 @@ param appServicePlanName string = ''
 param logAnalyticsName string = ''
 param resourceGroupName string = ''
 param storageAccountName string = ''
-param vNetName string = ''
+param openaiName string = ''
 param disableLocalAuth bool = true
+param chatGptModelName string = ''
+param chatGptDeploymentName string = ''
+param chatGptDeploymentVersion string = ''
+param chatGptDeploymentCapacity int = 0
+
+var chatGpt = {
+  modelName: !empty(chatGptModelName) ? chatGptModelName : 'gpt-4' 
+  deploymentName: !empty(chatGptDeploymentName) ? chatGptDeploymentName : 'gpt-4'
+  deploymentVersion: !empty(chatGptDeploymentVersion) ? chatGptDeploymentVersion : 'turbo-2024-04-09'
+  deploymentCapacity: chatGptDeploymentCapacity != 0 ? chatGptDeploymentCapacity : 40
+}
+
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -64,6 +75,7 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
   }
 }
 
+
 module api './app/api.bicep' = {
   name: 'api'
   scope: rg
@@ -79,9 +91,10 @@ module api './app/api.bicep' = {
     deploymentStorageContainerName: deploymentStorageContainerName
     identityId: apiUserAssignedIdentity.outputs.identityId
     identityClientId: apiUserAssignedIdentity.outputs.identityClientId
+    openaiEndpoint: openai.outputs.endpoint
+    chatModelDeploymentName: chatGpt.deploymentName
     appSettings: {
     }
-    virtualNetworkSubnetId: skipVnet ? '' : serviceVirtualNetwork.outputs.appSubnetID
   }
 }
 
@@ -94,10 +107,6 @@ module storage './core/storage/storage-account.bicep' = {
     location: location
     tags: tags
     containers: [{name: deploymentStorageContainerName}]
-    publicNetworkAccess: skipVnet ? 'Enabled' : 'Disabled'
-    networkAcls: skipVnet ? {} : {
-      defaultAction: 'Deny'
-    }
   }
 }
 
@@ -114,26 +123,16 @@ module storageRoleAssignmentApi 'app/storage-Access.bicep' = {
   }
 }
 
-// Virtual Network & private endpoint to blob storage
-module serviceVirtualNetwork 'app/vnet.bicep' =  if (!skipVnet) {
-  name: 'serviceVirtualNetwork'
-  scope: rg
-  params: {
-    location: location
-    tags: tags
-    vNetName: !empty(vNetName) ? vNetName : '${abbrs.networkVirtualNetworks}${resourceToken}'
-  }
-}
+var tableRoleDefinitionId  = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' //Storage Table Data Contributor for OpenAI chat history
 
-module storagePrivateEndpoint 'app/storage-PrivateEndpoint.bicep' = if (!skipVnet) {
-  name: 'servicePrivateEndpoint'
+// Allow access from api to storage account using a managed identity
+module tableRoleAssignmentApi 'app/storage-Access.bicep' = {
+  name: 'tableRoleAssignmentapi'
   scope: rg
   params: {
-    location: location
-    tags: tags
-    virtualNetworkName: !empty(vNetName) ? vNetName : '${abbrs.networkVirtualNetworks}${resourceToken}'
-    subnetName: skipVnet ? '' : serviceVirtualNetwork.outputs.peSubnetName
-    resourceName: storage.outputs.name
+    storageAccountName: storage.outputs.name
+    roleDefinitionID: tableRoleDefinitionId
+    principalID: apiUserAssignedIdentity.outputs.identityPrincipalId
   }
 }
 
@@ -159,6 +158,44 @@ module appInsightsRoleAssignmentApi './core/monitor/appinsights-access.bicep' = 
   params: {
     appInsightsName: monitoring.outputs.applicationInsightsName
     roleDefinitionID: monitoringRoleDefinitionId
+    principalID: apiUserAssignedIdentity.outputs.identityPrincipalId
+  }
+}
+
+// Azure OpenAI
+module openai './core/openai/openai.bicep' = {
+  name: 'openai'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    name: !empty(openaiName) ? openaiName : '${abbrs.openaiNamespaces}${resourceToken}'
+    deployments: [
+      {
+        name: chatGpt.deploymentName
+        capacity: chatGpt.deploymentCapacity
+        model: {
+          format: 'OpenAI'
+          name: chatGpt.modelName
+          version: chatGpt.deploymentVersion
+        }
+        scaleSettings: {
+          scaleType: 'Standard'
+        }
+      }
+    ]
+  }
+}
+
+var openaiRoleDefinitionId = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd' // Cognitive Services OpenAI User
+
+// Allow access from to OpenAI using a managed identity
+module openaiRoleAssignmentApi './core/openai/openai-access.bicep' = {
+  name: 'openaiRoleAssignmentapi'
+  scope: rg
+  params: {
+    openaiName: openai.outputs.name
+    roleDefinitionID: openaiRoleDefinitionId
     principalID: apiUserAssignedIdentity.outputs.identityPrincipalId
   }
 }

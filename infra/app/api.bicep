@@ -14,7 +14,15 @@ param instanceMemoryMB int = 2048
 param maximumInstanceCount int = 100
 param identityId string = ''
 param identityClientId string = ''
+param openaiEndpoint string = ''
+param chatModelDeploymentName string = 'gpt-4'
 
+
+resource stg 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: storageAccountName
+}
+
+var tableEndpoint = stg.properties.primaryEndpoints.table
 var applicationInsightsIdentity = 'ClientId=${identityClientId};Authorization=AAD'
 
 module api '../core/host/functions-flexconsumption.bicep' = {
@@ -29,6 +37,10 @@ module api '../core/host/functions-flexconsumption.bicep' = {
       {
         AzureWebJobsStorage__clientId : identityClientId
         APPLICATIONINSIGHTS_AUTHENTICATION_STRING: applicationInsightsIdentity
+        AZURE_OPENAI_ENDPOINT: openaiEndpoint
+        AzureWebJobsStorage__tableServiceUri : tableEndpoint
+        CHAT_MODEL_DEPLOYMENT_NAME: chatModelDeploymentName
+        AZURE_CLIENT_ID: identityClientId
       })
     applicationInsightsName: applicationInsightsName
     appServicePlanId: appServicePlanId

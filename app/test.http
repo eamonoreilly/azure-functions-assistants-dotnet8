@@ -1,0 +1,15 @@
+#@host=https://<functionapp>.azurewebsites.net
+@host=http://localhost:7071
+
+### Create a new chat
+PUT {{host}}/api/assistants/1
+
+
+### Ask what time it is in a place to trigger GetTime function
+POST  {{host}}/api/assistants/1?message=What%20time%20is%20it%20in%20Seattle?
+
+
+### Ask what the weather is in a place to trigger GetWeather function
+POST  {{host}}/api/assistants/1?message=What%20is%20the%20weather%20in%20Tacoma?
+
+

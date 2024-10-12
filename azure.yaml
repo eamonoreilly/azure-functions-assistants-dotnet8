@@ -1,10 +1,10 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: starter-dotnet8-flex-func
+name: azure-functions-assistants-dotnet8
 metadata:
-  template: functions-quickstart-dotnet-azd@1.0.0
+  template: azure-functions-assistants-dotnet8@1.0.0
 services:
   api:
-    project: ./http/
+    project: ./app/
     language: dotnet
     host: function
