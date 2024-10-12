@@ -45,7 +45,7 @@ You can learn more about the OpenAI trigger and bindings extension in the [GitHu
 
 ### Permissions
 #### Add the following permissions to the Azure OpenAI resource:
-<b>Cognitive Services OpenAI User</b> - Add your account (contoso.microsoft.com) to the OpenAI resource to test locally and the Azure Function App's Managed Identity in Azure. You can enable managed identity from the Identity page in the Azure Functions app.
+<b>Cognitive Services OpenAI User</b> - Add your account (contoso.microsoft.com) to the OpenAI resource if you did not create the OpenAI resource to test locally and the Azure Function App's Managed Identity when running in Azure. You can enable managed identity from the Identity page in the Azure Functions app.
 
 ## Run your app using Visual Studio Code
 
@@ -53,13 +53,13 @@ You can learn more about the OpenAI trigger and bindings extension in the [GitHu
 1. Run the `code .` code command to open the project in Visual Studio Code.
 1. In the command palette (F1), type `Azurite: Start`, which enables debugging without warnings.
 1. Press **Run/Debug (F5)** to run in the debugger. Select **Debug anyway** if prompted about local emulator not running.
-1. Send GET and POST requests to the `httpget` and `httppost` endpoints respectively using your HTTP test tool (or browser for `httpget`). If you have the [RestClient](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension installed, you can execute requests directly from the [`test.http`](./http/test.http) project file.
+1. Send GET and POST requests to the `httpget` and `httppost` endpoints respectively using your HTTP test tool (or browser for `httpget`). If you have the [RestClient](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) extension installed, you can execute requests directly from the [`test.http`](./app/test.http) project file.
 
 ## Run your app using Visual Studio
 
-1. Open the `http.sln` solution file in Visual Studio.
+1. Open the `AssistantSample.sln` solution file in Visual Studio.
 1. Press **Run/F5** to run in the debugger. Make a note of the `localhost` URL endpoints, including the port, which might not be `7071`.
-1. Open the [`test.http`](./http/test.http) project file, update the port on the `localhost` URL (if needed), and then use the built-in HTTP client to call the `httpget` and `httppost` endpoints.
+1. Open the [`test.http`](./app/test.http) project file, update the port on the `localhost` URL (if needed), and then use the built-in HTTP client to call the `httpget` and `httppost` endpoints.
 
 
 ## Deploy to Azure
