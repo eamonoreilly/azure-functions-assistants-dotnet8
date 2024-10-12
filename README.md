@@ -6,7 +6,7 @@ products:
 - azure-functions
 - azure
 - entra-id
-urlFragment: azure-functions-assistants-dotnet8
+urlFragment: azure-functions-openai-assistants-dotnet8
 languages:
 - csharp
 - bicep
