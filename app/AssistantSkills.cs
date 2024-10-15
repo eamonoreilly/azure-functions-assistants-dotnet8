@@ -18,7 +18,7 @@ public class AssistantSkills
 
     [Function(nameof(GetWeather))]
     public String GetWeather(
-        [AssistantSkillTrigger("Get the weather in location")] string location)
+        [AssistantSkillTrigger("Get the weather in location", Model = "%CHAT_MODEL_DEPLOYMENT_NAME%")] string location)
     {
         // Log the location for which the weather is being requested
         this.logger.LogInformation("Getting weather for location: {0}", location);
