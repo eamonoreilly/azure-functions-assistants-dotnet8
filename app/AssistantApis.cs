@@ -2,32 +2,41 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenAI.Assistants;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Logging;
 
 namespace AssistantSample;
 
 /// <summary>
 /// Defines HTTP APIs for interacting with assistants.
 /// </summary>
-static class AssistantApis
+class AssistantApis
 {
     // Location to store chat history
     const string DefaultChatStorageConnectionSetting = "AzureWebJobsStorage";
     const string DefaultCollectionName = "ChatState";
 
+    readonly ILogger<AssistantApis> logger;
+
+    public AssistantApis(ILogger<AssistantApis> logger)
+    {
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
     /// <summary>
     /// HTTP PUT function that creates a new assistant chat bot with the specified ID.
     /// </summary>
     [Function(nameof(CreateAssistant))]
-    public static CreateChatBotOutput CreateAssistant(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "assistants/{assistantId}")] HttpRequestData req,
-        string assistantId)
+    public CreateChatBotOutput CreateAssistant(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "assistants/{assistantId}")]
+            HttpRequestData req,
+        string assistantId
+    )
     {
         // Create a JSON response object with the assistant ID
         var responseJson = new { assistantId };
 
         // Instructions for the assistant chat bot
-        string instructions =
-           """
+        string instructions = """
             Don't make assumptions about what values to plug into functions.
             Ask for clarification if a user request is ambiguous.
             """;
@@ -45,7 +54,7 @@ static class AssistantApis
             ChatBotCreateRequest = new AssistantCreateRequest(assistantId, instructions)
             {
                 ChatStorageConnectionSetting = DefaultChatStorageConnectionSetting,
-                CollectionName = DefaultCollectionName
+                CollectionName = DefaultCollectionName,
             },
         };
     }
@@ -65,11 +74,22 @@ static class AssistantApis
     /// HTTP POST function that sends user prompts to the assistant chat bot and returns results
     /// </summary>
     [Function(nameof(PostUserQuery))]
-    public static IActionResult PostUserQuery(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "assistants/{assistantId}")] HttpRequestData req,
+    public IActionResult PostUserQuery(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "assistants/{assistantId}")]
+            HttpRequestData req,
         string assistantId,
-        [AssistantPostInput("{assistantId}", "{message}", Model = "%CHAT_MODEL_DEPLOYMENT_NAME%", ChatStorageConnectionSetting = DefaultChatStorageConnectionSetting, CollectionName = DefaultCollectionName)] AssistantState state)
+        [AssistantPostInput(
+            "{assistantId}",
+            "{message}",
+            Model = "%CHAT_MODEL_DEPLOYMENT_NAME%",
+            ChatStorageConnectionSetting = DefaultChatStorageConnectionSetting,
+            CollectionName = DefaultCollectionName
+        )]
+            AssistantState state
+    )
     {
-        return new OkObjectResult(state.RecentMessages.LastOrDefault()?.Content ?? "No response returned.");
+        return new OkObjectResult(
+            state.RecentMessages.LastOrDefault()?.Content ?? "No response returned."
+        );
     }
 }
