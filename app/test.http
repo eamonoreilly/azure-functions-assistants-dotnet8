@@ -6,10 +6,18 @@ PUT {{host}}/api/assistants/1
 
 
 ### Ask what time it is in a place to trigger GetTime function
-POST  {{host}}/api/assistants/1?message=What%20time%20is%20it%20in%20Seattle?
+POST  {{host}}/api/assistants/1
+Content-Type: application/json
+
+{
+    "message": "What time is it in Tacoma?"
+}
 
 
 ### Ask what the weather is in a place to trigger GetWeather function
-POST  {{host}}/api/assistants/1?message=What%20is%20the%20weather%20in%20Tacoma?
+POST  {{host}}/api/assistants/1
+Content-Type: application/json
 
-
+{
+    "message": "What is the weather in Tacoma?"
+}
