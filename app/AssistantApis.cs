@@ -27,7 +27,7 @@ class AssistantApis
     /// </summary>
     [Function(nameof(CreateAssistant))]
     public CreateChatBotOutput CreateAssistant(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "assistants/{assistantId}")]
+        [HttpTrigger(AuthorizationLevel.Function, "put", Route = "assistants/{assistantId}")]
             HttpRequestData req,
         string assistantId
     )
@@ -75,7 +75,7 @@ class AssistantApis
     /// </summary>
     [Function(nameof(PostUserQuery))]
     public IActionResult PostUserQuery(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "assistants/{assistantId}")]
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "assistants/{assistantId}")]
             HttpRequestData req,
         string assistantId,
         [AssistantPostInput(
