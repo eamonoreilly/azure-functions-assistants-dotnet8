@@ -103,8 +103,8 @@ You can run the `azd up` command as many times as you need to both provision you
 
 ## Clean up resources
 
-When you're done working with your function app and related resources, you can use this command to delete the function app and its related resources from Azure and avoid incurring any further costs:
+When you're done working with your function app and related resources, you can use this command to delete the function app and its related resources from Azure and avoid incurring any further costs (--purge does not leave a soft delete of AI resource and recovers your quota):
 
 ```shell
-azd down
+azd down --purge
 ```
