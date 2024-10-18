@@ -1,7 +1,6 @@
-
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Logging;
 using Microsoft.Azure.Functions.Worker.Extensions.OpenAI.Assistants;
+using Microsoft.Extensions.Logging;
 
 namespace AssistantSample;
 
@@ -11,6 +10,7 @@ namespace AssistantSample;
 public class AssistantSkills
 {
     readonly ILogger<AssistantSkills> logger;
+
     public AssistantSkills(ILogger<AssistantSkills> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -18,7 +18,12 @@ public class AssistantSkills
 
     [Function(nameof(GetWeather))]
     public String GetWeather(
-        [AssistantSkillTrigger("Get the weather in location", Model = "%CHAT_MODEL_DEPLOYMENT_NAME%")] string location)
+        [AssistantSkillTrigger(
+            "Get the weather in location",
+            Model = "%CHAT_MODEL_DEPLOYMENT_NAME%"
+        )]
+            string location
+    )
     {
         // Log the location for which the weather is being requested
         this.logger.LogInformation("Getting weather for location: {0}", location);
@@ -29,8 +34,12 @@ public class AssistantSkills
 
     [Function(nameof(GetTime))]
     public String GetTime(
-        [AssistantSkillTrigger("Get the current time of location using time zone", Model = "%CHAT_MODEL_DEPLOYMENT_NAME%")]
-        string timeZone)
+        [AssistantSkillTrigger(
+            "Get the current time of location using time zone",
+            Model = "%CHAT_MODEL_DEPLOYMENT_NAME%"
+        )]
+            string timeZone
+    )
     {
         // Log the time zone for which the current time is being requested
         this.logger.LogInformation("Getting time in {0}", timeZone);
@@ -48,5 +57,3 @@ public class AssistantSkills
         return localTime.ToString("t");
     }
 }
-
-
